@@ -1,0 +1,69 @@
+(function() {
+    const quickMenu = document.getElementById("quickMenu");
+    if (quickMenu) {
+        const addBoxBtn = document.createElement("button");
+        addBoxBtn.innerText = "Add Blackout Box";
+        addBoxBtn.style.marginTop = "5px";
+        addBoxBtn.style.background = "black";
+        addBoxBtn.style.color = "white";
+        addBoxBtn.onclick = createBlackoutBox;
+        quickMenu.appendChild(addBoxBtn);
+    }
+
+    let isDragging = false;
+    let currentBox = null;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    function createBlackoutBox() {
+        const box = document.createElement("div");
+        
+        box.classList.add("shallot-blackout-box");
+        box.style.position = "fixed";
+        box.style.top = "150px";
+        box.style.left = "150px";
+        box.style.width = "200px";
+        box.style.height = "100px";
+        box.style.backgroundColor = "black";
+        box.style.zIndex = "999999";        
+        box.style.resize = "both";
+        box.style.overflow = "hidden"; 
+        box.style.cursor = "move";
+        box.addEventListener('contextmenu', function(e) {
+            e.preventDefault(); // Stop the normal browser context menu from appearing
+            box.remove();
+        });
+
+        document.body.appendChild(box);
+    }
+    document.addEventListener('mousedown', function(e) {
+        if (e.target.classList.contains('shallot-blackout-box')) {
+            const box = e.target;
+            const rect = box.getBoundingClientRect();
+            if (e.clientX > rect.right - 15 && e.clientY > rect.bottom - 15) {
+                return; 
+            }
+
+            isDragging = true;
+            currentBox = box;
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            currentBox.style.cursor = "grabbing";
+        }
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (isDragging && currentBox) {
+            currentBox.style.left = (e.clientX - offsetX) + "px";
+            currentBox.style.top = (e.clientY - offsetY) + "px";
+        }
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (isDragging && currentBox) {
+            currentBox.style.cursor = "move";
+            isDragging = false;
+            currentBox = null;
+        }
+    });
+})();
