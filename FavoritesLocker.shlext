@@ -1,0 +1,65 @@
+(function() {
+    const favoritesBar = document.getElementById("favoritesBar");
+    if (!favoritesBar) return;
+    const overlay = document.createElement("div");
+    overlay.id = "shallot-favorites-lock-overlay";
+    function positionOverlay() {
+        const rect = favoritesBar.getBoundingClientRect();
+        overlay.style.position = "fixed";
+        overlay.style.top = `${rect.top}px`;
+        overlay.style.left = `${rect.left}px`;
+        overlay.style.width = `${rect.width}px`;
+        overlay.style.height = `${rect.height}px`;
+    }
+    overlay.style.cssText = `position:absolute;
+        background: linear-gradient(to bottom left, indigo,black, indigo, black);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-radius: ${window.getComputedStyle(favoritesBar).borderRadius};
+        z-index: 9999;
+        pointer-events: auto;
+    `;
+        positionOverlay();
+    window.addEventListener("resize", positionOverlay);
+    const lockText = document.createElement("p");
+    lockText.innerText = "Favorites are locked.";
+    lockText.style.cssText = "color: magenta; margin: 0 0 10px 0; font-family: sans-serif; font-size: 14px;";
+    const unlockBtn = document.createElement("button");
+    unlockBtn.innerText = "Unlock";
+    unlockBtn.style.cssText = "background: rgba(255, 0, 255, 0.2); color: cyan; border: 1px solid cyan; border-radius: 5px; padding: 5px 15px; cursor: pointer;";
+    overlay.appendChild(lockText);
+    overlay.appendChild(unlockBtn);
+    document.body.appendChild(overlay);
+    unlockBtn.addEventListener("click", () => {
+        const passwordKey = "ShallotBrowserFavoritesPassword";
+        const storedPassword = localStorage.getItem(passwordKey);
+
+        if (!storedPassword) {
+            const newPassword = prompt("No password set. Please create a password to lock your favorites:");
+            if (newPassword && newPassword.trim() !== "") {
+                localStorage.setItem(passwordKey, newPassword.trim());
+                alert("Password set successfully! Click Unlock again to access.");
+            } else {
+                alert("Password creation cancelled.");
+            }
+        } else {
+            const userAttempt = prompt("Enter your password to unlock favorites:");
+            if (userAttempt === storedPassword) {
+                window.removeEventListener("resize", positionOverlay);
+                overlay.remove();
+            } else if (userAttempt !== null) {
+                alert("Incorrect password.");
+            }
+        }
+    });
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+    async function startLoop() {
+    while (true) {
+        positionOverlay();
+        await delay(20);
+    }
+    }
+    startLoop();
+})();
